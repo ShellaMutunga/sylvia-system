@@ -52,21 +52,21 @@ function Login() {
             </span>
           </div>
           
-          <h2 className="text-farm-dark text-sm font-light tracking-widest uppercase mb-1">
+          <h2 className="text-gray-800 text-sm font-light tracking-widest uppercase mb-1">
             Sign in
           </h2>
-          <h1 className="text-farm-dark text-3xl font-light mb-10">
+          <h1 className="text-gray-800 text-3xl font-light mb-10">
             Welcome!
           </h1>
 
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
-              <label className="block text-slate-500 text-sm mb-2">User</label>
+              <label className="block text-gray-500 text-sm mb-2">User</label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type="text"
-                  className="w-full bg-white border border-slate-300 rounded-lg pl-10 pr-4 py-3 text-farm-dark placeholder-slate-400 focus:outline-none focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e] transition-colors"
+                  className="w-full bg-white border border-gray-300 rounded-lg pl-10 pr-4 py-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e] transition-colors"
                   placeholder="Enter your username"
                   defaultValue="sylvia@redhill.com"
                 />
@@ -74,12 +74,12 @@ function Login() {
             </div>
 
             <div>
-              <label className="block text-slate-500 text-sm mb-2">Password</label>
+              <label className="block text-gray-500 text-sm mb-2">Password</label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type="password"
-                  className="w-full bg-white border border-slate-300 rounded-lg pl-10 pr-4 py-3 text-farm-dark placeholder-slate-400 focus:outline-none focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e] transition-colors"
+                  className="w-full bg-white border border-gray-300 rounded-lg pl-10 pr-4 py-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e] transition-colors"
                   placeholder="Enter your password"
                   defaultValue="password"
                 />
