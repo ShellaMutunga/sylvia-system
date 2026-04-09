@@ -7,6 +7,8 @@ A modern farm management enterprise resource planning (ERP) system built with **
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Running the Application](#running-the-application)
+- [User Accounts](#user-accounts)
+- [Features](#features)
 - [Project Structure](#project-structure)
 - [Available Commands](#available-commands)
 - [Database](#database)
@@ -20,12 +22,13 @@ Sylvia is a comprehensive farm management system designed to streamline agricult
 - Inventory management
 - Financial reporting
 - User management and authentication
+- Multiple role-based profiles (Admin, Sheep, Fish, Vegetable, Demo)
 
 ### Tech Stack
 - **Backend**: Laravel 12 (PHP 8.2+)
 - **Frontend**: React 19 with Vite
-- **Database**: MySQL 5.7+
-- **Styling**: Tailwind CSS
+- **Database**: SQLite (default) / MySQL (configurable)
+- **Styling**: Tailwind CSS v4
 - **Package Manager**: Composer (backend), npm (frontend)
 
 ## ✅ Prerequisites
@@ -36,7 +39,6 @@ Before running the application, ensure you have the following installed:
 - **Composer** >= 2.0
 - **Node.js** >= 18.0
 - **npm** >= 9.0
-- **MySQL** >= 5.7 (or MariaDB >= 10.2)
 
 ### Check Installation
 ```bash
@@ -67,27 +69,6 @@ Generate application key:
 php artisan key:generate
 ```
 
-Configure MySQL connection in `.env`:
-```bash
-# Edit the following in backend/.env:
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=sylvia_farm
-DB_USERNAME=root
-DB_PASSWORD=your_password
-```
-
-Create MySQL database:
-```bash
-mysql -u root -e "CREATE DATABASE IF NOT EXISTS sylvia_farm CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-```
-
-Run migrations to set up database tables:
-```bash
-php artisan migrate
-```
-
 ### 2. Frontend Setup (React)
 
 Navigate to the frontend directory and install dependencies:
@@ -99,36 +80,145 @@ npm install
 
 ## 🚀 Running the Application
 
-### Option 1: Run Both Servers Simultaneously (Recommended)
-
-From the backend directory, use the combined dev script:
-
+### Run Frontend
 ```bash
-cd backend
-composer run dev
+cd frontend
+npm run dev
 ```
+Frontend available at: http://localhost:5173
 
-This will start:
-- **Laravel Server**: http://localhost:8000
-- **Vite Dev Server**: http://localhost:5173
-- **Queue Listener**: For background jobs
-- **Logs Viewer**: Real-time logs with Pail
-
-### Option 2: Run Servers Separately
-
-**Terminal 1 - Start Laravel Server:**
+### Run Backend
 ```bash
 cd backend
 php artisan serve
 ```
 Backend available at: http://localhost:8000
 
-**Terminal 2 - Start React Dev Server:**
-```bash
-cd frontend
-npm run dev
-```
-Frontend available at: http://localhost:5173
+## 👥 User Accounts
+
+The system comes with 5 pre-configured user accounts:
+
+| Email | Password | Role | Profile |
+|-------|----------|------|---------|
+| sylvia@redhill.com | password | Administrator | Admin Dashboard |
+| sheep@redhill.com | password | Sheep Manager | Sheep Profile |
+| fish@redhill.com | password | Fish Manager | Fish Profile |
+| vegetable@redhill.com | password | Crop Manager | Vegetable Profile |
+| demonstration@redhill.com | password | Demo Manager | Demo Farm |
+
+### Login Routing
+The login page automatically routes users to their appropriate profile based on their email:
+- **sylvia** → Admin Dashboard (`/dashboard`)
+- **sheep** → Sheep Profile (`/sheep`)
+- **fish** → Fish Profile (`/fish`)
+- **vegetable** → Vegetable Profile (`/vegetable`)
+- **demonstration** → Demo Profile (`/demonstration`)
+
+## 🎨 Features
+
+### 1. Splash Screen
+- Forest Green (#024D30) background
+- Mint Green bouncing Sprout icon
+- "Welcome to Redhill Farm" text
+- "~by Sylvia Karebe" signature in gold
+- Auto-navigates to login after 3.5 seconds
+
+### 2. Login Page
+- Split layout: Farm image (left) + Login form (right)
+- Light green overlay on image
+- Farm branding with "Redhill Farm" and "Farm Management System"
+- Dynamic routing based on email
+
+### 3. Admin Dashboard (/dashboard)
+- **Header**: Shows "REDHILL FARM" title + dark/light toggle + profile menu
+- **Profile Menu**: Click avatar to access Log Out, Switch Account, Close System
+- **Hub View** (5 category cards + 2 charts):
+  - Dashboard (Blue) - Main overview and analytics
+  - Operations (Green) - Farm operations & management
+  - Sales & Orders (Purple) - Revenue and order management
+  - Employees (Orange) - Staff management & HR
+  - Accounting (Teal) - Financial reports & accounting
+  - Feed Consumption chart
+  - Water Usage chart
+- **Dashboard Section** (when Dashboard is clicked):
+  - Stats cards: Total Animals, Crop Yield, Revenue, Water Usage, Feed Stock, Active Staff
+  - Weekly Feed Consumption chart
+  - Recent Activity feed
+  - Quick Actions buttons
+
+### 4. Operations Section
+- Livestock Overview (Dairy Cows, Beef Cattle, Goats, Chickens)
+- Crop Status (Maize, Wheat, Vegetables)
+- Today's Tasks (to-do list with priorities)
+
+### 5. Sales & Orders Section
+- Table with ID, Customer, Item, Amount, Date, Status
+- Status badges: Completed, Pending, Delivered, Cancelled
+
+### 6. Employees Section
+- Filter tabs: All, Active, On Leave
+- Stats: Total, Active, On Leave, Departments
+- Employee table with Name, Role, Department, Phone, Shift, Status
+
+### 7. Accounting Section
+- Stats: Total Income, Total Costs, Net Profit, Profit Margin
+- Expenses Breakdown (progress bars)
+- Income Sources (progress bars)
+
+### 8. Sheep Profile (/sheep)
+- **Header**: Dark green (#064E3B) / Light mint (#ECFDF5)
+- **Hub**: Stats cards (Total Flock, Lambs, Ewes, Rams) + 5 section cards + charts
+- **Sections**:
+  - Flock Overview - Total sheep, monthly growth trend
+  - Health - Healthy/Under Observation/Needs Attention
+  - Livestock Feed - Daily/weekly consumption, costs
+  - Daily Records - Activity log with time, notes, status
+  - Age Groups - Table with weight and health status
+
+### 9. Fish Profile (/fish)
+- **Header**: Dark blue (#1E3A5F) / Light blue (#E0F2FE)
+- **Hub**: Stats cards (Total Fish, Tilapia, Catfish) + 4 section cards + charts
+- **Sections**:
+  - Pond Overview - Fish count by pond
+  - Water Quality - pH, Dissolved Oxygen, Temperature, Ammonia, Nitrite
+  - Fish Health - Health status breakdown
+  - Feeding Log - Daily feeding schedule
+
+### 10. Vegetable Profile (/vegetable)
+- **Header**: Forest green (#14532D) / Light green (#DCFCE7)
+- **Hub**: Stats cards (Crop Types, Hectares, Ready, Growing) + 4 section cards + crop table
+- **Sections**:
+  - Crop Overview - All crops with status, yield, days left
+  - Irrigation - Daily/weekly water usage
+  - Harvest - Monthly harvest trend chart
+  - Weather - Weather conditions
+
+### 11. Demo Profile (/demonstration)
+- **Header**: Dark purple (#4C1D95) / Light purple (#F3E8FF)
+- **Hub**: Stats (Total Visitors, This Month, Revenue, Rating) + 4 section cards + bookings table
+- **Sections**:
+  - Bookings - Visitor bookings with group, type, date, payment, status
+  - Demo Types - Sheep, Fish, Vegetable, Full Tour options with pricing
+  - Revenue - Monthly revenue chart
+  - Feedback - Visitor reviews and ratings
+
+### 12. Profile Menu (All Profiles)
+When clicking the profile photo/avatar:
+- **Log Out** - Returns to login form
+- **Switch Account** - Returns to login form
+- **Close System** - Shows "Goodbye" screen with "See you soon!" message
+
+### 13. Goodbye Screen
+- Plain text (no icon) on Forest Green background
+- "Goodbye" text
+- "See you soon!" in gold
+- Auto-closes browser after 3.5 seconds
+
+### 14. Color Scheme
+- **Dark Theme Background**: Deep Navy Blue (#0F172A)
+- **Dark Theme Cards**: Slate Blue (#1E293B)
+- **Sub-text**: Muted grey/semi-transparent white
+- **Light Theme**: Available for all profiles with appropriate color accents
 
 ## 📁 Project Structure
 
@@ -136,212 +226,72 @@ Frontend available at: http://localhost:5173
 sylvia-system/
 ├── backend/                    # Laravel application
 │   ├── app/                    # Application code
-│   │   ├── Http/              # Controllers, Requests, Middleware
-│   │   ├── Models/            # Database models
-│   │   └── Providers/         # Service providers
-│   ├── bootstrap/             # Bootstrap files
-│   ├── config/                # Configuration files
-│   ├── database/
-│   │   ├── migrations/        # Database migrations
-│   │   ├── factories/         # Model factories
-│   │   ├── seeders/          # Database seeders
-│   │   └── database.sqlite    # SQLite database
-│   ├── resources/             # Views and assets
-│   ├── routes/                # Route definitions
-│   ├── storage/               # Application storage
-│   ├── tests/                 # Test files
-│   ├── composer.json          # PHP dependencies
-│   ├── artisan                # Laravel CLI
-│   └── vite.config.js         # Vite config for assets
+│   │   └── Models/             # User model
+│   ├── database/               # Migrations, seeders
+│   ├── .env                    # Environment config
+│   └── ...
 │
 └── frontend/                   # React application
     ├── src/
-    │   ├── App.jsx            # Main App component + Dashboard
-    │   ├── index.css          # Global styles (Tailwind v4)
-    │   ├── main.jsx           # React entry point
-    │   ├── components/        # React components
-    │   └── pages/             # Page components (Login, etc.)
-    ├── public/                # Public assets
-    ├── index.html             # HTML template
-    ├── package.json           # Node.js dependencies
-    ├── vite.config.js         # Vite configuration
-    └── eslint.config.js       # ESLint rules
-```
-
-## 🎨 Frontend Features (April 9, 2026)
-
-### Splash Screen
-- Forest Green (#024D30) background
-- Mint Green (#4ade80) bouncing Sprout icon
-- White divider line with "Welcome to Redhill Farm" text
-- "~by Sylvia Karebe" signature in gold
-- Auto-navigates to login after 3.5 seconds
-
-### Login Page
-- Split layout: Farm image (left) + Login form (right)
-- Light green overlay on image
-- Farm branding with "Redhill Farm" and "Farm Management System"
-- Sylvia logo integration
-- Pre-filled credentials: sylvia@redhill.com / password
-
-### Dashboard (ERP Interface)
-- **Navigation**: Top bar with "REDHILL FARM" title and Sun/Moon dark/light toggle
-- **Category Cards** (5 cards with glassmorphism + glow effects):
-  - Dashboard: Solid Vibrant Blue (#2563EB)
-  - Operations: Deep Forest Green (#024D30)
-  - Sales & Orders: Royal Purple (#7C3AED)
-  - Employees: Burnt Orange (#EA580C)
-  - Accounting: Sharp Teal (#0D9488)
-- **Data Panels**: Two vertical bar charts
-  - Food Levels (kg) with green gradient
-  - Water Levels (L) with blue gradient
-- **Dark/Light Mode**: Toggle switches background between charcoal (#121212) and white (#f5f5f5)
-
-### Dependencies Installed
-- react-router-dom (routing)
-- framer-motion (animations)
-- recharts (charts)
-- lucide-react (icons)
-- tailwindcss v4 (styling)
-sylvia-system/
-├── backend/                    # Laravel application
-│   ├── app/                    # Application code
-│   │   ├── Http/              # Controllers, Requests, Middleware
-│   │   ├── Models/            # Database models
-│   │   └── Providers/         # Service providers
-│   ├── bootstrap/             # Bootstrap files
-│   ├── config/                # Configuration files
-│   ├── database/
-│   │   ├── migrations/        # Database migrations
-│   │   ├── factories/         # Model factories
-│   │   ├── seeders/           # Database seeders
-│   │   └── database.sqlite    # SQLite database
-│   ├── resources/             # Views and assets
-│   ├── routes/                # Route definitions
-│   ├── storage/               # Application storage
-│   ├── tests/                 # Test files
-│   ├── composer.json          # PHP dependencies
-│   ├── artisan                # Laravel CLI
-│   └── vite.config.js         # Vite config for assets
-│
-└── frontend/                   # React application
-    ├── src/
-    │   ├── App.jsx            # Main App component
+    │   ├── App.jsx            # Main App + Admin Dashboard
     │   ├── index.css          # Global styles
-    │   ├── main.jsx           # React entry point
-    │   └── assets/            # Static assets
-    ├── public/                # Public assets
-    ├── index.html             # HTML template
-    ├── package.json           # Node.js dependencies
-    ├── vite.config.js         # Vite configuration
-    ├── tailwind.config.js     # Tailwind CSS configuration
-    └── eslint.config.js       # ESLint rules
+    │   ├── pages/
+    │   │   ├── Login.jsx      # Login page with routing
+    │   └── profiles/
+    │       ├── SheepProfile.jsx
+    │       ├── FishProfile.jsx
+    │       ├── VegetableProfile.jsx
+    │       └── DemoProfile.jsx
+    └── ...
 ```
 
 ## 🛠️ Available Commands
 
-### Backend (Laravel)
-
-```bash
-cd backend
-
-# Development
-php artisan serve                    # Start development server
-composer run dev                     # Start all services (server, queue, logs, vite)
-php artisan tinker                   # Laravel REPL
-
-# Database
-php artisan migrate                  # Run migrations
-php artisan migrate:rollback         # Rollback last migration
-php artisan seed:db                  # Seed database
-php artisan db:seed                  # Run seeders
-
-# Generate
-php artisan make:model Model -m      # Create model with migration
-php artisan make:controller Controller # Create controller
-php artisan make:middleware Middleware # Create middleware
-
-# Code Quality
-composer test                        # Run PHPUnit tests
-php artisan lint                     # Fix code style
-
-# Utility
-php artisan cache:clear             # Clear application cache
-php artisan config:clear            # Clear configuration cache
-```
-
 ### Frontend (React)
-
 ```bash
 cd frontend
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run preview      # Preview production build
+```
 
-# Development
-npm run dev                          # Start development server
-npm run build                        # Build for production
-npm run preview                      # Preview production build
-npm run lint                         # Check code style with ESLint
+### Backend (Laravel)
+```bash
+cd backend
+php artisan serve                    # Start development server
+php artisan migrate                  # Run migrations
+php artisan tinker                   # Laravel REPL
 ```
 
 ## 🗄️ Database
 
-### Current Setup
-- **Type**: MySQL (configured for both development & production)
-- **Host**: 127.0.0.1
-- **Port**: 3306
-- **Database**: sylvia_farm
-- **Connection**: Configured in `backend/.env`
-
-### Setup MySQL
-
-#### 1. Ensure MySQL is Running
-```bash
-# Start MySQL service
-sudo service mysql start
-# or for MariaDB
-sudo service mariadb start
-```
-
-#### 2. Create Database
-```bash
-mysql -u root -e "CREATE DATABASE IF NOT EXISTS sylvia_farm CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-```
-
-#### 3. Update .env with Database Credentials (if needed)
-Edit `backend/.env`:
-```env
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=sylvia_farm
-DB_USERNAME=root
-DB_PASSWORD=your_password_here
-```
-
-#### 4. Run Migrations
+### Creating Users
+Users are stored in the SQLite database. To add new users:
 ```bash
 cd backend
-php artisan migrate
+php artisan tinker
+App\Models\User::create(['name' => 'Name', 'email' => 'email@example.com', 'password' => bcrypt('password')]);
 ```
 
-### Default Tables (Migrated)
-- `users` - User accounts and authentication
-- `cache` - Cache data
-- `failed_jobs` - Failed queue jobs
-- `jobs` - Job queue table
-- `sessions` - User session management
+### Current Users (Pre-seeded)
+- Sylvia Karebe (sylvia@redhill.com)
+- Sheep (sheep@redhill.com)
+- Fish (fish@redhill.com)
+- Vegetable (vegetable@redhill.com)
+- Demonstration (demonstration@redhill.com)
 
 ## 👥 Development Team
 
-- **Backend & Database**: Sylvia Karebe
-- **Frontend Lead**: Development Team
+- **Project Lead**: Sylvia Karebe
+- **Frontend**: React 19 + Vite + Tailwind CSS
+- **Backend**: Laravel 12
 
 ## 📝 Notes
 
-- The application is set up with hot module reloading (HMR) for development
-- Database migrations are automated and will run on `composer run dev`
-- Environment variables are configured in `backend/.env` (create from `.env.example`)
-- Frontend uses Tailwind CSS for styling with PostCSS support
-- ESLint is configured for code quality on the frontend
+- The application uses dark/light theme toggle on all profiles
+- Each profile has unique header colors for easy identification
+- Profile menu is available on all pages for quick logout/switch/close
+- The demo profile tracks visitors interested in farm demonstrations (sheep, fish, vegetables)
 
 ## ℹ️ Getting Help
 
@@ -352,4 +302,4 @@ For Tailwind CSS, visit: https://tailwindcss.com
 ---
 
 **Last Updated**: April 9, 2026
-**Status**: ✅ Frontend Complete - Splash Screen, Login, Dashboard with Dark/Light Mode
+**Status**: ✅ Complete - 5 User Profiles with Full Functionality
