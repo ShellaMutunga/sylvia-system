@@ -271,7 +271,7 @@ function Dashboard() {
           {activeCategory ? (
             <button 
               onClick={() => setActiveCategory(null)}
-              className="flex items-center gap-2 text-white/60 hover:text-white transition-colors"
+              className={`flex items-center gap-2 hover:opacity-80 transition-colors ${darkMode ? 'text-white/60 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
             >
               <ArrowLeft className="w-5 h-5" />
             </button>

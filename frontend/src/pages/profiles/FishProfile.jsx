@@ -65,7 +65,7 @@ function FishProfile() {
       <nav className={`border-b px-8 py-4 flex items-center justify-between ${darkMode ? 'bg-[#1E3A5F] border-white/10' : 'bg-[#E0F2FE] border-blue-200'}`}>
         <div className="flex-1 flex items-center">
           {activeSection ? (
-            <button onClick={() => setActiveSection(null)} className={`flex items-center gap-2 ${darkMode ? 'text-white/60 hover:text-white' : 'text-blue-800 hover:text-blue-900'}`}>
+            <button onClick={() => setActiveSection(null)} className={`flex items-center gap-2 ${darkMode ? 'text-white/60 hover:text-white' : 'text-gray-800 hover:text-gray-900'}`}>
               <ArrowLeft className="w-5 h-5" />
             </button>
           ) : (

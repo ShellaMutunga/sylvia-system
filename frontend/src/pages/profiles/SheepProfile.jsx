@@ -86,7 +86,7 @@ function SheepProfile() {
           {activeSection ? (
             <button 
               onClick={() => setActiveSection(null)}
-              className={`flex items-center gap-2 ${darkMode ? 'text-white/60 hover:text-white' : 'text-green-800 hover:text-green-900'} transition-colors`}
+              className={`flex items-center gap-2 ${darkMode ? 'text-white/60 hover:text-white' : 'text-gray-800 hover:text-gray-900'} transition-colors`}
             >
               <ArrowLeft className="w-5 h-5" />
             </button>

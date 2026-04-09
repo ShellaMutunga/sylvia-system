@@ -17,16 +17,29 @@ function Login() {
     setError('');
     try {
       const { user } = await authService.login(email, password);
-      // Route based on role after real auth
-      const role = user?.roles?.[0]?.name;
-      if (role === 'admin' || role === 'manager') {
-        navigate('/dashboard');
-      } else if (role === 'vet') {
-        navigate('/animals');
-      } else if (role === 'accountant') {
-        navigate('/finance');
+      
+      // Route based on email for profile pages
+      const emailLower = email.toLowerCase();
+      if (emailLower.includes('sheep')) {
+        navigate('/sheep');
+      } else if (emailLower.includes('fish')) {
+        navigate('/fish');
+      } else if (emailLower.includes('vegetable')) {
+        navigate('/vegetable');
+      } else if (emailLower.includes('demonstration')) {
+        navigate('/demonstration');
       } else {
-        navigate('/dashboard');
+        // Route based on role for admin users
+        const role = user?.roles?.[0]?.name;
+        if (role === 'admin' || role === 'manager') {
+          navigate('/dashboard');
+        } else if (role === 'vet') {
+          navigate('/animals');
+        } else if (role === 'accountant') {
+          navigate('/finance');
+        } else {
+          navigate('/dashboard');
+        }
       }
     } catch (err) {
       const msg = err.response?.data?.message

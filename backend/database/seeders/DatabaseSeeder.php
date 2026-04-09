@@ -80,5 +80,57 @@ class DatabaseSeeder extends Seeder
             ]
         );
         $vet->syncRoles(['vet']);
+
+        // Sheep Profile
+        $sheep = User::firstOrCreate(
+            ['email' => 'sheep@redhill.com'],
+            [
+                'name'      => 'Sheep Manager',
+                'password'  => bcrypt('password'),
+                'phone'     => '+254 700 000005',
+                'farm_id'   => $farm->id,
+                'is_active' => true,
+            ]
+        );
+        $sheep->syncRoles(['worker']);
+
+        // Fish Profile
+        $fish = User::firstOrCreate(
+            ['email' => 'fish@redhill.com'],
+            [
+                'name'      => 'Fish Manager',
+                'password'  => bcrypt('password'),
+                'phone'     => '+254 700 000006',
+                'farm_id'   => $farm->id,
+                'is_active' => true,
+            ]
+        );
+        $fish->syncRoles(['worker']);
+
+        // Vegetable Profile
+        $vegetable = User::firstOrCreate(
+            ['email' => 'vegetable@redhill.com'],
+            [
+                'name'      => 'Vegetable Manager',
+                'password'  => bcrypt('password'),
+                'phone'     => '+254 700 000007',
+                'farm_id'   => $farm->id,
+                'is_active' => true,
+            ]
+        );
+        $vegetable->syncRoles(['worker']);
+
+        // Demo Profile
+        $demo = User::firstOrCreate(
+            ['email' => 'demonstration@redhill.com'],
+            [
+                'name'      => 'Demo Manager',
+                'password'  => bcrypt('password'),
+                'phone'     => '+254 700 000008',
+                'farm_id'   => $farm->id,
+                'is_active' => true,
+            ]
+        );
+        $demo->syncRoles(['worker']);
     }
 }
