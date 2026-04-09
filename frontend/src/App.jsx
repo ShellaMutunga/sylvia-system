@@ -1,9 +1,13 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Sprout, Sun, Moon, LayoutDashboard, ShoppingCart, Users, Settings, DollarSign, ArrowUpRight, ArrowDownRight, ArrowLeft } from 'lucide-react';
+import { Sprout, Sun, Moon, LayoutDashboard, ShoppingCart, Users, Settings, DollarSign, ArrowUpRight, ArrowDownRight, ArrowLeft, LogOut, UserPlus, X } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import Login from './pages/Login';
+import SheepProfile from './pages/profiles/SheepProfile';
+import FishProfile from './pages/profiles/FishProfile';
+import VegetableProfile from './pages/profiles/VegetableProfile';
+import DemoProfile from './pages/profiles/DemoProfile';
 
 function SplashScreen() {
   const navigate = useNavigate();
@@ -60,9 +64,68 @@ function SplashScreen() {
   );
 }
 
+function LogoutScreen() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      window.close();
+    }, 3500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <motion.div
+      className="fixed inset-0 bg-[#024D30] flex flex-col items-center justify-center"
+      initial={{ opacity: 1 }}
+      animate={{ opacity: 0 }}
+      transition={{ duration: 0.8, delay: 2.7 }}
+    >
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8, delay: 0.4 }}
+        className="text-white font-extralight tracking-[0.9em] text-xl uppercase mb-4"
+      >
+        Goodbye
+      </motion.p>
+
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8, delay: 0.6 }}
+        className="text-[#fbbf24] font-light italic text-sm ml-[11em]"
+      >
+        See you soon!
+      </motion.p>
+    </motion.div>
+  );
+}
+
 function Dashboard() {
+  const navigate = useNavigate();
   const [darkMode, setDarkMode] = useState(true);
-  const [activeCategory, setActiveCategory] = useState('Dashboard');
+  const [activeCategory, setActiveCategory] = useState(null);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+
+  const currentUser = {
+    name: 'Sylvia Karebe',
+    email: 'sylvia@redhill.com',
+    role: 'Administrator',
+    avatar: 'SK'
+  };
+
+  const handleLogout = () => {
+    navigate('/login');
+  };
+
+  const handleSwitchAccount = () => {
+    navigate('/login');
+  };
+
+  const handleCloseSystem = () => {
+    navigate('/logout');
+  };
 
   const categories = [
     { 
@@ -213,8 +276,54 @@ function Dashboard() {
               <ArrowLeft className="w-5 h-5" />
             </button>
           ) : (
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
-              <Sprout className="w-6 h-6 text-white" />
+            <div className="relative">
+              <button 
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+              >
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+                  <span className="text-white font-semibold text-sm">{currentUser.avatar}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                    Welcome, {currentUser.name.split(' ')[0]}
+                  </span>
+                  <span className={`text-xs ${darkMode ? 'text-white/50' : 'text-gray-500'}`}>
+                    {currentUser.email}
+                  </span>
+                </div>
+              </button>
+              {showProfileMenu && (
+                <div 
+                  className="absolute top-14 left-0 w-48 rounded-lg shadow-lg border z-50"
+                  style={{ 
+                    background: darkMode ? '#1E293B' : 'white',
+                    borderColor: darkMode ? 'rgba(255,255,255,0.1)' : '#e5e5e5'
+                  }}
+                >
+                  <button 
+                    onClick={handleLogout}
+                    className={`w-full flex items-center gap-3 text-left px-4 py-3 text-sm hover:opacity-80 ${darkMode ? 'text-white' : 'text-gray-800'}`}
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Log Out
+                  </button>
+                  <button 
+                    onClick={handleSwitchAccount}
+                    className={`w-full flex items-center gap-3 text-left px-4 py-3 text-sm hover:opacity-80 ${darkMode ? 'text-white' : 'text-gray-800'}`}
+                  >
+                    <UserPlus className="w-4 h-4" />
+                    Switch Account
+                  </button>
+                  <button 
+                    onClick={handleCloseSystem}
+                    className={`w-full flex items-center gap-3 text-left px-4 py-3 text-sm hover:opacity-80 ${darkMode ? 'text-red-400' : 'text-red-600'}`}
+                  >
+                    <X className="w-4 h-4" />
+                    Close System
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -860,7 +969,12 @@ function App() {
       <Routes>
         <Route path="/" element={<SplashScreen />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/logout" element={<LogoutScreen />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/sheep" element={<SheepProfile />} />
+        <Route path="/fish" element={<FishProfile />} />
+        <Route path="/vegetable" element={<VegetableProfile />} />
+        <Route path="/demonstration" element={<DemoProfile />} />
       </Routes>
     </BrowserRouter>
   );

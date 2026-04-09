@@ -6,12 +6,26 @@ import { useNavigate } from 'react-router-dom';
 function Login() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setLoading(true);
     setTimeout(() => {
-      navigate('/dashboard');
+      const userEmail = email.toLowerCase();
+      if (userEmail.includes('sylvia')) {
+        navigate('/dashboard');
+      } else if (userEmail.includes('sheep')) {
+        navigate('/sheep');
+      } else if (userEmail.includes('fish')) {
+        navigate('/fish');
+      } else if (userEmail.includes('vegetable')) {
+        navigate('/vegetable');
+      } else if (userEmail.includes('demonstration')) {
+        navigate('/demonstration');
+      } else {
+        navigate('/dashboard');
+      }
     }, 500);
   };
 
@@ -68,7 +82,8 @@ function Login() {
                   type="text"
                   className="w-full bg-white border border-gray-300 rounded-lg pl-10 pr-4 py-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e] transition-colors"
                   placeholder="Enter your username"
-                  defaultValue="sylvia@redhill.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
             </div>
