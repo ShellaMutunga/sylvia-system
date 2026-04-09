@@ -1,24 +1,34 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { User, Lock, Sprout } from 'lucide-react';
-import { useNavigate, Link, useSearchParams } from 'react-router-dom';
-import { authService } from '../services/auth';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
   const [email, setEmail] = useState('sylvia@redhill.com');
   const [password, setPassword] = useState('password');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Where to go after login (respects redirect-after-auth)
+  const from = location.state?.from?.pathname || null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
     try {
-      const { user } = await authService.login(email, password);
-      
-      // Route based on email for profile pages
+      const user = await login(email, password);
+
+      if (from) {
+        navigate(from, { replace: true });
+        return;
+      }
+
+      // Route based on email for demo profile pages
       const emailLower = email.toLowerCase();
       if (emailLower.includes('sheep')) {
         navigate('/sheep');
@@ -29,11 +39,9 @@ function Login() {
       } else if (emailLower.includes('demonstration')) {
         navigate('/demonstration');
       } else {
-        // Route based on role for admin users
+        // Route based on actual role from API
         const role = user?.roles?.[0]?.name;
-        if (role === 'admin' || role === 'manager') {
-          navigate('/dashboard');
-        } else if (role === 'vet') {
+        if (role === 'vet') {
           navigate('/animals');
         } else if (role === 'accountant') {
           navigate('/finance');

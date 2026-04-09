@@ -3,6 +3,9 @@ import { motion } from 'framer-motion';
 import { Sprout, Sun, Moon, LayoutDashboard, ShoppingCart, Users, Settings, DollarSign, ArrowUpRight, ArrowDownRight, ArrowLeft, LogOut, UserPlus, X } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import api from './services/api';
 import Login from './pages/Login';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
@@ -106,22 +109,66 @@ function LogoutScreen() {
 
 function Dashboard() {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [darkMode, setDarkMode] = useState(true);
   const [activeCategory, setActiveCategory] = useState(null);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [stats, setStats] = useState(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [employees, setEmployees] = useState([]);
+  const [employeesLoading, setEmployeesLoading] = useState(true);
+  const [txSummary, setTxSummary] = useState(null);
+  const [transactions, setTransactions] = useState([]);
+  const [animalGroups, setAnimalGroups] = useState([]);
+  const [cropSeasons, setCropSeasons] = useState([]);
 
+  // Build display info from real logged-in user
   const currentUser = {
-    name: 'Sylvia Karebe',
-    email: 'sylvia@redhill.com',
-    role: 'Administrator',
-    avatar: 'SK'
+    name: user?.name || 'User',
+    email: user?.email || '',
+    role: user?.roles?.[0]?.name
+      ? user.roles[0].name.charAt(0).toUpperCase() + user.roles[0].name.slice(1)
+      : 'Staff',
+    avatar: user?.name
+      ? user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+      : '??',
   };
 
-  const handleLogout = () => {
+  // Fetch live dashboard stats from API
+  useEffect(() => {
+    api.get('/dashboard/stats')
+      .then(res => setStats(res.data))
+      .catch(() => setStats(null))
+      .finally(() => setStatsLoading(false));
+  }, []);
+
+  // Fetch employees
+  useEffect(() => {
+    api.get('/employees')
+      .then(res => setEmployees(res.data.data ?? res.data))
+      .catch(() => setEmployees([]))
+      .finally(() => setEmployeesLoading(false));
+  }, []);
+
+  // Fetch transaction summary and recent transactions
+  useEffect(() => {
+    api.get('/transactions/summary').then(res => setTxSummary(res.data)).catch(() => {});
+    api.get('/transactions').then(res => setTransactions(res.data.data ?? res.data)).catch(() => {});
+  }, []);
+
+  // Fetch operations data
+  useEffect(() => {
+    api.get('/animal-groups').then(res => setAnimalGroups(res.data.data ?? res.data)).catch(() => {});
+    api.get('/crop-seasons').then(res => setCropSeasons(res.data.data ?? res.data)).catch(() => {});
+  }, []);
+
+  const handleLogout = async () => {
+    await logout();
     navigate('/login');
   };
 
-  const handleSwitchAccount = () => {
+  const handleSwitchAccount = async () => {
+    await logout();
     navigate('/login');
   };
 
@@ -167,13 +214,50 @@ function Dashboard() {
     },
   ];
 
-  const stats = [
-    { label: 'Total Animals', value: '1,247', change: '+12', icon: '🐄', color: '#10B981' },
-    { label: 'Crop Yield (kg)', value: '45,230', change: '+8.5%', icon: '🌾', color: '#FBBF24' },
-    { label: 'Revenue (KSh)', value: '2.4M', change: '+23%', icon: '💰', color: '#8B5CF6' },
-    { label: 'Water Usage (L)', value: '125,400', change: '-5%', icon: '💧', color: '#3B82F6' },
-    { label: 'Feed Stock (kg)', value: '8,500', change: '+15%', icon: '🍃', color: '#F97316' },
-    { label: 'Active Staff', value: '24', change: '0', icon: '👥', color: '#EC4899' },
+  // KPI cards — built from live API data
+  const kpis = [
+    {
+      label: 'Total Animals',
+      value: statsLoading ? '…' : (stats?.kpis?.total_animals ?? '—').toLocaleString(),
+      icon: '🐄',
+      color: '#10B981',
+      sub: `${stats?.alerts?.upcoming_checkups ?? 0} checkups due`,
+    },
+    {
+      label: 'Active Crop Seasons',
+      value: statsLoading ? '…' : (stats?.kpis?.active_crop_seasons ?? '—'),
+      icon: '🌾',
+      color: '#FBBF24',
+      sub: `${stats?.alerts?.upcoming_harvests ?? 0} harvests soon`,
+    },
+    {
+      label: 'Monthly Revenue',
+      value: statsLoading ? '…' : `KSh ${((stats?.kpis?.monthly_income ?? 0) / 1000).toFixed(0)}K`,
+      icon: '💰',
+      color: '#8B5CF6',
+      sub: `Profit: KSh ${((stats?.kpis?.monthly_profit ?? 0) / 1000).toFixed(0)}K`,
+    },
+    {
+      label: 'Low Stock Items',
+      value: statsLoading ? '…' : (stats?.kpis?.low_stock_items ?? '—'),
+      icon: '📦',
+      color: '#F97316',
+      sub: 'Need reordering',
+    },
+    {
+      label: 'Active Employees',
+      value: statsLoading ? '…' : (stats?.kpis?.active_employees ?? '—'),
+      icon: '👥',
+      color: '#EC4899',
+      sub: `${stats?.alerts?.pending_leaves ?? 0} leave requests`,
+    },
+    {
+      label: 'Monthly Expenses',
+      value: statsLoading ? '…' : `KSh ${((stats?.kpis?.monthly_expense ?? 0) / 1000).toFixed(0)}K`,
+      icon: '📉',
+      color: '#3B82F6',
+      sub: 'This month',
+    },
   ];
 
   const recentActivities = [
@@ -204,66 +288,63 @@ function Dashboard() {
     { name: 'Sun', level: 650 },
   ];
 
+  // operationsData from real API
   const operationsData = {
-    livestock: [
-      { name: 'Dairy Cows', count: 45, status: 'healthy' },
-      { name: 'Beef Cattle', count: 30, status: 'healthy' },
-      { name: 'Goats', count: 80, status: 'healthy' },
-      { name: 'Chickens', count: 250, status: 'under observation' },
-    ],
-    crops: [
-      { name: 'Maize', hectares: 15, status: 'growing' },
-      { name: 'Wheat', hectares: 8, status: 'harvest ready' },
-      { name: 'Vegetables', hectares: 5, status: 'growing' },
-    ],
-    tasks: [
-      { id: 1, title: 'Morning milking - Barn A', assignedTo: 'John', due: '8:00 AM', priority: 'high', completed: false },
-      { id: 2, title: 'Feed cattle - Section B', assignedTo: 'Mary', due: '10:00 AM', priority: 'medium', completed: true },
-      { id: 3, title: 'Irrigation check - Maize field', assignedTo: 'Peter', due: '12:00 PM', priority: 'low', completed: false },
-      { id: 4, title: 'Vaccination - Goats', assignedTo: 'Sarah', due: '2:00 PM', priority: 'high', completed: false },
-      { id: 5, title: 'Harvest vegetables - Plot 3', assignedTo: 'John', due: '4:00 PM', priority: 'medium', completed: false },
-    ],
+    livestock: animalGroups.map(g => ({
+      name: g.name,
+      count: g.animals_count ?? g.total_count ?? '—',
+      status: g.status || 'healthy',
+    })),
+    crops: cropSeasons.map(s => ({
+      name: s.crop_type?.name ?? '—',
+      hectares: s.area_planted ?? '—',
+      status: s.status || 'growing',
+    })),
+    tasks: [],
   };
 
-  const salesData = [
-    { id: 'ORD-001', customer: 'Fresh Mart', item: 'Milk (50L)', amount: 'KSh 15,000', date: '2026-04-09', status: 'Completed' },
-    { id: 'ORD-002', customer: 'Hotel Safari', item: 'Beef (20kg)', amount: 'KSh 12,000', date: '2026-04-09', status: 'Pending' },
-    { id: 'ORD-003', customer: 'Green Grocers', item: 'Vegetables (15kg)', amount: 'KSh 4,500', date: '2026-04-08', status: 'Completed' },
-    { id: 'ORD-004', customer: 'Dairy Queen', item: 'Milk (100L)', amount: 'KSh 30,000', date: '2026-04-08', status: 'Completed' },
-    { id: 'ORD-005', customer: 'Local Butcher', item: 'Goat Meat (10kg)', amount: 'KSh 8,000', date: '2026-04-07', status: 'Delivered' },
-    { id: 'ORD-006', customer: 'School Canteen', item: 'Eggs (200 pcs)', amount: 'KSh 4,000', date: '2026-04-07', status: 'Completed' },
-    { id: 'ORD-007', customer: 'Restaurant Hub', item: 'Chicken (25kg)', amount: 'KSh 7,500', date: '2026-04-06', status: 'Cancelled' },
-  ];
+  // salesData from real transactions
+  const salesData = transactions.slice(0, 10).map(tx => ({
+    id: `TXN-${tx.id}`,
+    customer: tx.account?.name || '—',
+    item: tx.description || tx.category || '—',
+    amount: `KSh ${Number(tx.amount).toLocaleString()}`,
+    date: tx.date || '—',
+    status: tx.type === 'income' ? 'Completed' : 'Expense',
+  }));
 
-  const employeesData = [
-    { id: 1, name: 'John Kamau', role: 'Farm Manager', department: 'Operations', phone: '+254 712 345 678', status: 'active', shift: 'Morning' },
-    { id: 2, name: 'Mary Wanjiku', role: 'Milker', department: 'Livestock', phone: '+254 723 456 789', status: 'active', shift: 'Morning' },
-    { id: 3, name: 'Peter Ochieng', role: 'Crop Technician', department: 'Crops', phone: '+254 734 567 890', status: 'active', shift: 'Day' },
-    { id: 4, name: 'Sarah Akinyi', role: 'Veterinary Assistant', department: 'Health', phone: '+254 745 678 901', status: 'active', shift: 'Morning' },
-    { id: 5, name: 'James Odhiambo', role: 'Security Guard', department: 'Security', phone: '+254 756 789 012', status: 'active', shift: 'Night' },
-    { id: 6, name: 'Grace Atieno', role: 'Harvest Supervisor', department: 'Crops', phone: '+254 767 890 123', status: 'on leave', shift: 'Day' },
-    { id: 7, name: 'Daniel Mwangi', role: 'Feed Manager', department: 'Livestock', phone: '+254 778 901 234', status: 'active', shift: 'Morning' },
-    { id: 8, name: 'Faith Nekesa', role: 'Cleaner', department: 'Maintenance', phone: '+254 789 012 345', status: 'active', shift: 'Morning' },
-  ];
+  // employeesData is now fetched from /api/employees (mapped for display)
+  const employeesData = employees.map(emp => ({
+    id: emp.id,
+    name: `${emp.first_name ?? ''} ${emp.last_name ?? ''}`.trim() || '—',
+    role: emp.job_title || '—',
+    department: emp.department?.name || '—',
+    phone: emp.phone || '—',
+    status: emp.status || 'inactive',
+    shift: emp.salary_type === 'daily' ? 'Day' : emp.salary_type === 'monthly' ? 'Full-time' : '—',
+  }));
 
+  // accountingData from real /api/transactions/summary
+  const fmtKsh = (n) => `KSh ${Number(n ?? 0).toLocaleString()}`;
+  const byModule = txSummary?.by_module ?? [];
+  const expenseModules = byModule.filter(r => r.type === 'expense');
+  const incomeModules = byModule.filter(r => r.type === 'income');
+  const totalExpense = expenseModules.reduce((s, r) => s + Number(r.total), 0) || 1;
+  const totalIncome = incomeModules.reduce((s, r) => s + Number(r.total), 0) || 1;
   const accountingData = {
-    totalIncome: 'KSh 2,450,000',
-    totalCosts: 'KSh 1,320,000',
-    netProfit: 'KSh 1,130,000',
-    expenses: [
-      { category: 'Feed & Supplements', amount: 'KSh 450,000', percentage: 34 },
-      { category: 'Veterinary Services', amount: 'KSh 280,000', percentage: 21 },
-      { category: 'Labor Wages', amount: 'KSh 320,000', percentage: 24 },
-      { category: 'Equipment & Maintenance', amount: 'KSh 150,000', percentage: 11 },
-      { category: 'Utilities (Water, Electricity)', amount: 'KSh 80,000', percentage: 6 },
-      { category: 'Other Expenses', amount: 'KSh 40,000', percentage: 4 },
-    ],
-    incomeSources: [
-      { source: 'Milk Sales', amount: 'KSh 1,200,000', percentage: 49 },
-      { source: 'Crop Sales', amount: 'KSh 650,000', percentage: 27 },
-      { source: 'Livestock Sales', amount: 'KSh 400,000', percentage: 16 },
-      { source: 'Other Income', amount: 'KSh 200,000', percentage: 8 },
-    ],
+    totalIncome: fmtKsh(txSummary?.income ?? stats?.kpis?.monthly_income),
+    totalCosts: fmtKsh(txSummary?.expense ?? stats?.kpis?.monthly_expense),
+    netProfit: fmtKsh(txSummary?.profit ?? stats?.kpis?.monthly_profit),
+    expenses: expenseModules.map(e => ({
+      category: (e.module ?? 'general').charAt(0).toUpperCase() + (e.module ?? 'general').slice(1),
+      amount: fmtKsh(e.total),
+      percentage: Math.round((Number(e.total) / totalExpense) * 100),
+    })),
+    incomeSources: incomeModules.map(e => ({
+      source: (e.module ?? 'general').charAt(0).toUpperCase() + (e.module ?? 'general').slice(1),
+      amount: fmtKsh(e.total),
+      percentage: Math.round((Number(e.total) / totalIncome) * 100),
+    })),
   };
 
   return (
@@ -458,9 +539,9 @@ function Dashboard() {
         ) : activeCategory === 'Dashboard' ? (
           <>
             <div className="grid grid-cols-6 gap-4 mb-8">
-              {stats.map((stat, index) => (
+              {kpis.map((kpi, index) => (
                 <motion.div
-                  key={stat.label}
+                  key={kpi.label}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
@@ -471,24 +552,23 @@ function Dashboard() {
                   }}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-2xl">{stat.icon}</span>
-                    <span className={`flex items-center text-xs ${stat.change.startsWith('+') ? 'text-green-500' : stat.change.startsWith('-') ? 'text-red-500' : 'text-gray-500'}`}>
-                      {stat.change.startsWith('+') ? <ArrowUpRight className="w-3 h-3" /> : stat.change.startsWith('-') ? <ArrowDownRight className="w-3 h-3" /> : null}
-                      {stat.change}
+                    <span className="text-2xl">{kpi.icon}</span>
+                    <span className="text-xs" style={{ color: kpi.color }}>
+                      {statsLoading ? '…' : kpi.sub}
                     </span>
                   </div>
                   <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                    {stat.value}
+                    {kpi.value}
                   </p>
                   <p className={`text-xs ${darkMode ? 'text-white/50' : 'text-gray-500'}`}>
-                    {stat.label}
+                    {kpi.label}
                   </p>
                 </motion.div>
               ))}
             </div>
 
             <div className="grid grid-cols-3 gap-8 mb-8">
-              <div 
+              <div
                 className="rounded-2xl p-6 border col-span-2"
                 style={{
                   background: darkMode ? '#1E293B' : 'white',
@@ -496,19 +576,20 @@ function Dashboard() {
                 }}
               >
                 <h3 className={`text-lg font-semibold mb-6 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                  Weekly Feed Consumption (kg)
+                  Monthly Income Trend (KSh)
                 </h3>
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={foodData}>
+                    <BarChart data={stats?.charts?.income_trend?.map(r => ({ name: r.month, total: Number(r.total) })) ?? []}>
                       <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.1)' : '#e5e5e5'} />
                       <XAxis dataKey="name" stroke={darkMode ? '#666' : '#888'} fontSize={12} />
-                      <YAxis stroke={darkMode ? '#666' : '#888'} fontSize={12} />
+                      <YAxis stroke={darkMode ? '#666' : '#888'} fontSize={12} tickFormatter={v => `${(v/1000).toFixed(0)}K`} />
                       <Tooltip
                         contentStyle={{ backgroundColor: darkMode ? '#1E293B' : 'white', border: darkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid #e5e5e5', borderRadius: '12px' }}
                         labelStyle={{ color: darkMode ? '#fff' : '#000' }}
+                        formatter={v => [`KSh ${Number(v).toLocaleString()}`, 'Income']}
                       />
-                      <Bar dataKey="level" fill="url(#greenGlow)" radius={[8, 8, 0, 0]} />
+                      <Bar dataKey="total" fill="url(#greenGlow)" radius={[8, 8, 0, 0]} />
                       <defs>
                         <linearGradient id="greenGlow" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="0%" stopColor="#22c55e" />
@@ -553,11 +634,11 @@ function Dashboard() {
                 }}
               >
                 <h3 className={`text-lg font-semibold mb-6 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                  Water Usage (L)
+                  Weekly Animal Production
                 </h3>
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={waterData}>
+                    <BarChart data={stats?.charts?.weekly_production?.map(r => ({ name: r.production_type, total: Number(r.total) })) ?? []}>
                       <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.1)' : '#e5e5e5'} />
                       <XAxis dataKey="name" stroke={darkMode ? '#666' : '#888'} fontSize={12} />
                       <YAxis stroke={darkMode ? '#666' : '#888'} fontSize={12} />
@@ -565,7 +646,7 @@ function Dashboard() {
                         contentStyle={{ backgroundColor: darkMode ? '#1E293B' : 'white', border: darkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid #e5e5e5', borderRadius: '12px' }}
                         labelStyle={{ color: darkMode ? '#fff' : '#000' }}
                       />
-                      <Bar dataKey="level" fill="url(#blueGlow)" radius={[8, 8, 0, 0]} />
+                      <Bar dataKey="total" fill="url(#blueGlow)" radius={[8, 8, 0, 0]} />
                       <defs>
                         <linearGradient id="blueGlow" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="0%" stopColor="#3b82f6" />
@@ -577,7 +658,7 @@ function Dashboard() {
                 </div>
               </div>
 
-              <div 
+              <div
                 className="rounded-2xl p-6 border"
                 style={{
                   background: darkMode ? '#1E293B' : 'white',
@@ -682,6 +763,9 @@ function Dashboard() {
                 </button>
               </div>
               <div className="space-y-3">
+                {operationsData.tasks.length === 0 && (
+                  <p className={`text-sm text-center py-6 ${darkMode ? 'text-white/40' : 'text-gray-400'}`}>No tasks for today.</p>
+                )}
                 {operationsData.tasks.map((task) => (
                   <div 
                     key={task.id} 
@@ -818,7 +902,7 @@ function Dashboard() {
                 className="rounded-xl p-4 border"
                 style={{ background: darkMode ? '#1E293B' : 'white', borderColor: darkMode ? 'rgba(255,255,255,0.1)' : '#e5e5e5' }}
               >
-                <p className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>8</p>
+                <p className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{new Set(employeesData.map(e => e.department).filter(d => d && d !== '—')).size || '—'}</p>
                 <p className={`text-sm ${darkMode ? 'text-white/60' : 'text-gray-500'}`}>Departments</p>
               </div>
             </div>
@@ -844,7 +928,11 @@ function Dashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {employeesData.map((emp) => (
+                    {employeesLoading ? (
+                      <tr><td colSpan={7} className={`py-8 text-center text-sm ${darkMode ? 'text-white/40' : 'text-gray-400'}`}>Loading employees…</td></tr>
+                    ) : employeesData.length === 0 ? (
+                      <tr><td colSpan={7} className={`py-8 text-center text-sm ${darkMode ? 'text-white/40' : 'text-gray-400'}`}>No employees found.</td></tr>
+                    ) : employeesData.map((emp) => (
                       <tr key={emp.id} className={`border-b ${darkMode ? 'border-white/10' : 'border-gray-100'}`}>
                         <td className={`py-3 px-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>{emp.name}</td>
                         <td className={`py-3 px-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>{emp.role}</td>
@@ -974,11 +1062,11 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/logout" element={<LogoutScreen />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/sheep" element={<SheepProfile />} />
-        <Route path="/fish" element={<FishProfile />} />
-        <Route path="/vegetable" element={<VegetableProfile />} />
-        <Route path="/demonstration" element={<DemoProfile />} />
+        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/sheep" element={<ProtectedRoute><SheepProfile /></ProtectedRoute>} />
+        <Route path="/fish" element={<ProtectedRoute><FishProfile /></ProtectedRoute>} />
+        <Route path="/vegetable" element={<ProtectedRoute><VegetableProfile /></ProtectedRoute>} />
+        <Route path="/demonstration" element={<ProtectedRoute><DemoProfile /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   );
