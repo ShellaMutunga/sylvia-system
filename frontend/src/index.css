@@ -1,3 +1,8 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-forest-green: #024D30;
+  --color-mint-green: #22c55e;
+  --color-farm-dark: #0f172a;
+  --color-farm-gold: #fbbf24;
+}

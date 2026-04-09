@@ -144,6 +144,76 @@ sylvia-system/
 │   ├── database/
 │   │   ├── migrations/        # Database migrations
 │   │   ├── factories/         # Model factories
+│   │   ├── seeders/          # Database seeders
+│   │   └── database.sqlite    # SQLite database
+│   ├── resources/             # Views and assets
+│   ├── routes/                # Route definitions
+│   ├── storage/               # Application storage
+│   ├── tests/                 # Test files
+│   ├── composer.json          # PHP dependencies
+│   ├── artisan                # Laravel CLI
+│   └── vite.config.js         # Vite config for assets
+│
+└── frontend/                   # React application
+    ├── src/
+    │   ├── App.jsx            # Main App component + Dashboard
+    │   ├── index.css          # Global styles (Tailwind v4)
+    │   ├── main.jsx           # React entry point
+    │   ├── components/        # React components
+    │   └── pages/             # Page components (Login, etc.)
+    ├── public/                # Public assets
+    ├── index.html             # HTML template
+    ├── package.json           # Node.js dependencies
+    ├── vite.config.js         # Vite configuration
+    └── eslint.config.js       # ESLint rules
+```
+
+## 🎨 Frontend Features (April 9, 2026)
+
+### Splash Screen
+- Forest Green (#024D30) background
+- Mint Green (#4ade80) bouncing Sprout icon
+- White divider line with "Welcome to Redhill Farm" text
+- "~by Sylvia Karebe" signature in gold
+- Auto-navigates to login after 3.5 seconds
+
+### Login Page
+- Split layout: Farm image (left) + Login form (right)
+- Light green overlay on image
+- Farm branding with "Redhill Farm" and "Farm Management System"
+- Sylvia logo integration
+- Pre-filled credentials: sylvia@redhill.com / password
+
+### Dashboard (ERP Interface)
+- **Navigation**: Top bar with "REDHILL FARM" title and Sun/Moon dark/light toggle
+- **Category Cards** (5 cards with glassmorphism + glow effects):
+  - Dashboard: Solid Vibrant Blue (#2563EB)
+  - Operations: Deep Forest Green (#024D30)
+  - Sales & Orders: Royal Purple (#7C3AED)
+  - Employees: Burnt Orange (#EA580C)
+  - Accounting: Sharp Teal (#0D9488)
+- **Data Panels**: Two vertical bar charts
+  - Food Levels (kg) with green gradient
+  - Water Levels (L) with blue gradient
+- **Dark/Light Mode**: Toggle switches background between charcoal (#121212) and white (#f5f5f5)
+
+### Dependencies Installed
+- react-router-dom (routing)
+- framer-motion (animations)
+- recharts (charts)
+- lucide-react (icons)
+- tailwindcss v4 (styling)
+sylvia-system/
+├── backend/                    # Laravel application
+│   ├── app/                    # Application code
+│   │   ├── Http/              # Controllers, Requests, Middleware
+│   │   ├── Models/            # Database models
+│   │   └── Providers/         # Service providers
+│   ├── bootstrap/             # Bootstrap files
+│   ├── config/                # Configuration files
+│   ├── database/
+│   │   ├── migrations/        # Database migrations
+│   │   ├── factories/         # Model factories
 │   │   ├── seeders/           # Database seeders
 │   │   └── database.sqlite    # SQLite database
 │   ├── resources/             # Views and assets
@@ -262,8 +332,8 @@ php artisan migrate
 
 ## 👥 Development Team
 
-- **Backend & Database**: [Your Name]
-- **Frontend**: [Friend's Name]
+- **Backend & Database**: Sylvia Karebe
+- **Frontend Lead**: Development Team
 
 ## 📝 Notes
 
@@ -282,4 +352,4 @@ For Tailwind CSS, visit: https://tailwindcss.com
 ---
 
 **Last Updated**: April 9, 2026
-**Status**: ✅ Installation Complete - Ready for Development
+**Status**: ✅ Frontend Complete - Splash Screen, Login, Dashboard with Dark/Light Mode
