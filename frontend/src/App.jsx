@@ -4,6 +4,8 @@ import { Sprout, Sun, Moon, LayoutDashboard, ShoppingCart, Users, Settings, Doll
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import Login from './pages/Login';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import SheepProfile from './pages/profiles/SheepProfile';
 import FishProfile from './pages/profiles/FishProfile';
 import VegetableProfile from './pages/profiles/VegetableProfile';
@@ -969,6 +971,8 @@ function App() {
       <Routes>
         <Route path="/" element={<SplashScreen />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/logout" element={<LogoutScreen />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/sheep" element={<SheepProfile />} />

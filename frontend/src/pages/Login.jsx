@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { User, Lock, Sprout } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { authService } from '../services/auth';
 
 function Login() {
@@ -132,10 +132,19 @@ function Login() {
               </div>
             </div>
 
+            <div className="flex justify-end">
+              <Link
+                to="/forgot-password"
+                className="text-sm text-[#22c55e] hover:text-[#16a34a] transition-colors"
+              >
+                Forgot password?
+              </Link>
+            </div>
+
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#22c55e] hover:bg-[#16a34a] text-white font-light tracking-wider py-3 rounded-lg transition-colors mt-4 disabled:opacity-50"
+              className="w-full bg-[#22c55e] hover:bg-[#16a34a] text-white font-light tracking-wider py-3 rounded-lg transition-colors mt-2 disabled:opacity-50"
             >
               {loading ? 'Signing in...' : 'Login'}
             </button>
