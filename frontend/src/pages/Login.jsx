@@ -8,8 +8,8 @@ function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
-  const [email, setEmail] = useState('sylvia@redhill.com');
-  const [password, setPassword] = useState('password');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -28,26 +28,14 @@ function Login() {
         return;
       }
 
-      // Route based on email for demo profile pages
-      const emailLower = email.toLowerCase();
-      if (emailLower.includes('sheep')) {
+      // Route based on role assigned by admin
+      const role = user?.roles?.[0]?.name;
+      if (role === 'sheep') {
         navigate('/sheep');
-      } else if (emailLower.includes('fish')) {
+      } else if (role === 'fish') {
         navigate('/fish');
-      } else if (emailLower.includes('vegetable')) {
-        navigate('/vegetable');
-      } else if (emailLower.includes('demonstration')) {
-        navigate('/demonstration');
       } else {
-        // Route based on actual role from API
-        const role = user?.roles?.[0]?.name;
-        if (role === 'vet') {
-          navigate('/animals');
-        } else if (role === 'accountant') {
-          navigate('/finance');
-        } else {
-          navigate('/dashboard');
-        }
+        navigate('/dashboard');
       }
     } catch (err) {
       const msg = err.response?.data?.message

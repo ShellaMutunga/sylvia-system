@@ -138,24 +138,30 @@ npm run dev
 
 ## User Accounts & Roles
 
-Seeded by `DatabaseSeeder`. All passwords: **`password`**
+Only one account is seeded. All other users are created by the admin through the dashboard.
 
-| Email | Role | Dashboard |
-|---|---|---|
-| sylvia@redhill.com | admin | Full ERP dashboard |
-| manager@redhill.com | manager | Full ERP dashboard |
-| accounts@redhill.com | accountant | Full ERP dashboard → Finance tab |
-| vet@redhill.com | vet | Full ERP dashboard → Animals tab |
-| sheep@redhill.com | worker | Sheep Profile |
-| fish@redhill.com | worker | Fish Farm Profile |
-| vegetable@redhill.com | worker | Vegetable Profile |
-| demonstration@redhill.com | worker | Demo Profile |
+| Email                     | Role  | Password     |
+|---------------------------|-------|--------------|
+| mariakattie874@gmail.com  | admin | `Admin@2024!`|
 
-### Role-based login routing
-- **vet** → `/animals` (via Operations)
-- **accountant** → `/finance` (via Accounting)
-- **admin / manager** → `/dashboard`
-- **email contains keyword** → matching profile page
+### Creating users
+
+Admin goes to **Employees → + Add User**, fills in name, email, phone, and role. The system:
+
+1. Auto-generates a secure temporary password
+2. Sends a branded welcome email to the user's real email address (via Gmail SMTP)
+3. Displays the generated password on screen for the admin's reference
+
+### Roles
+
+| Role        | Access                       | Login destination |
+|-------------|------------------------------|-------------------|
+| admin       | Full system access           | `/dashboard`      |
+| manager     | All operational modules      | `/dashboard`      |
+| accountant  | Finance & payroll            | `/dashboard`      |
+| vet         | Animals & health records     | `/dashboard`      |
+| sheep       | Sheep farm profile           | `/sheep`          |
+| fish        | Fish farm profile            | `/fish`           |
 
 ---
 

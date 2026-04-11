@@ -40,11 +40,12 @@ class UserController extends Controller
         ]);
 
         $user->assignRole($data['role']);
+        $user->load('roles'); // ensure roles are available in the email template
 
         // Send welcome email with credentials
         Mail::to($user->email)->send(new WelcomeEmail($user, $plainPassword));
 
-        return response()->json($user->load('roles'), 201);
+        return response()->json(array_merge($user->load('roles')->toArray(), ['plain_password' => $plainPassword]), 201);
     }
 
     public function show(User $user)

@@ -125,6 +125,14 @@ function Dashboard() {
   const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [inventoryLoading, setInventoryLoading] = useState(true);
 
+  // Add User modal state
+  const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [addUserForm, setAddUserForm] = useState({ name: '', email: '', phone: '', role: 'vet' });
+  const [addUserSaving, setAddUserSaving] = useState(false);
+  const [addUserError, setAddUserError] = useState('');
+  const [addUserSuccess, setAddUserSuccess] = useState('');
+  const [createdPassword, setCreatedPassword] = useState('');
+
   // Build display info from real logged-in user
   const currentUser = {
     name: user?.name || 'User',
@@ -145,9 +153,9 @@ function Dashboard() {
       .finally(() => setStatsLoading(false));
   }, []);
 
-  // Fetch employees
+  // Fetch users (system accounts = staff)
   useEffect(() => {
-    api.get('/employees')
+    api.get('/users')
       .then(res => setEmployees(res.data.data ?? res.data))
       .catch(() => setEmployees([]))
       .finally(() => setEmployeesLoading(false));
@@ -185,6 +193,30 @@ function Dashboard() {
 
   const handleCloseSystem = () => {
     navigate('/logout');
+  };
+
+  const handleAddUser = async (e) => {
+    e.preventDefault();
+    setAddUserSaving(true);
+    setAddUserError('');
+    setAddUserSuccess('');
+    try {
+      const res = await api.post('/users', addUserForm);
+      setCreatedPassword(res.data.plain_password || '');
+      setAddUserSuccess(`Account created — a welcome email has been sent to ${addUserForm.email}.`);
+      setAddUserForm({ name: '', email: '', phone: '', role: 'vet' });
+      // Refresh employees list
+      api.get('/employees')
+        .then(res => setEmployees(res.data.data ?? res.data))
+        .catch(() => {});
+    } catch (err) {
+      const msg = err.response?.data?.message
+        || Object.values(err.response?.data?.errors ?? {})?.[0]?.[0]
+        || 'Failed to create user.';
+      setAddUserError(msg);
+    } finally {
+      setAddUserSaving(false);
+    }
   };
 
   const categories = [
@@ -331,15 +363,17 @@ function Dashboard() {
     status: tx.type === 'income' ? 'Completed' : 'Expense',
   }));
 
-  // employeesData is now fetched from /api/employees (mapped for display)
+  // employeesData mapped from /api/users
   const employeesData = employees.map(emp => ({
     id: emp.id,
-    name: `${emp.first_name ?? ''} ${emp.last_name ?? ''}`.trim() || '—',
-    role: emp.job_title || '—',
-    department: emp.department?.name || '—',
+    name: emp.name || '—',
+    role: emp.roles?.[0]?.name
+      ? emp.roles[0].name.charAt(0).toUpperCase() + emp.roles[0].name.slice(1)
+      : '—',
+    department: '—',
     phone: emp.phone || '—',
-    status: emp.status || 'inactive',
-    shift: emp.salary_type === 'daily' ? 'Day' : emp.salary_type === 'monthly' ? 'Full-time' : '—',
+    status: emp.is_active ? 'active' : 'inactive',
+    shift: '—',
   }));
 
   // accountingData from real /api/transactions/summary
@@ -933,8 +967,11 @@ function Dashboard() {
                   On Leave
                 </button>
               </div>
-              <button className="px-4 py-2 rounded-lg text-sm bg-green-500 text-white hover:bg-green-600">
-                + Add Employee
+              <button
+                onClick={() => { setShowAddUserModal(true); setAddUserError(''); setAddUserSuccess(''); setCreatedPassword(''); }}
+                className="px-4 py-2 rounded-lg text-sm bg-green-500 text-white hover:bg-green-600"
+              >
+                + Add User
               </button>
             </div>
 
@@ -1215,6 +1252,135 @@ function Dashboard() {
           </>
         ) : null}
       </main>
+
+      {/* Add User Modal */}
+      {showAddUserModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div
+            className="w-full max-w-md rounded-2xl p-8 shadow-2xl border"
+            style={{ background: darkMode ? '#1E293B' : 'white', borderColor: darkMode ? 'rgba(255,255,255,0.12)' : '#e5e5e5' }}
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h2 className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Add New User</h2>
+              <button
+                onClick={() => setShowAddUserModal(false)}
+                className={`text-2xl leading-none ${darkMode ? 'text-white/40 hover:text-white' : 'text-gray-400 hover:text-gray-700'}`}
+              >
+                ×
+              </button>
+            </div>
+
+            {addUserError && (
+              <div className="mb-4 px-4 py-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
+                {addUserError}
+              </div>
+            )}
+            {addUserSuccess && (
+              <div className="mb-4 px-4 py-3 bg-green-500/10 border border-green-500/30 rounded-lg text-green-400 text-sm">
+                {addUserSuccess}
+              </div>
+            )}
+
+            {!addUserSuccess && !createdPassword ? (
+              <form onSubmit={handleAddUser} className="space-y-4">
+                <div>
+                  <label className={`block text-sm mb-1 ${darkMode ? 'text-white/60' : 'text-gray-500'}`}>Full Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={addUserForm.name}
+                    onChange={e => setAddUserForm(f => ({ ...f, name: e.target.value }))}
+                    placeholder="e.g. Jane Wambui"
+                    className={`w-full rounded-lg px-4 py-2.5 text-sm border focus:outline-none focus:ring-1 focus:ring-green-500 ${darkMode ? 'bg-[#0F172A] border-white/10 text-white placeholder-white/30' : 'bg-gray-50 border-gray-300 text-gray-800 placeholder-gray-400'}`}
+                  />
+                </div>
+                <div>
+                  <label className={`block text-sm mb-1 ${darkMode ? 'text-white/60' : 'text-gray-500'}`}>Email Address *</label>
+                  <input
+                    type="email"
+                    required
+                    value={addUserForm.email}
+                    onChange={e => setAddUserForm(f => ({ ...f, email: e.target.value }))}
+                    placeholder="jane@example.com"
+                    className={`w-full rounded-lg px-4 py-2.5 text-sm border focus:outline-none focus:ring-1 focus:ring-green-500 ${darkMode ? 'bg-[#0F172A] border-white/10 text-white placeholder-white/30' : 'bg-gray-50 border-gray-300 text-gray-800 placeholder-gray-400'}`}
+                  />
+                  <p className={`mt-1 text-xs ${darkMode ? 'text-white/40' : 'text-gray-400'}`}>A welcome email with login credentials will be sent here.</p>
+                </div>
+                <div>
+                  <label className={`block text-sm mb-1 ${darkMode ? 'text-white/60' : 'text-gray-500'}`}>Phone (optional)</label>
+                  <input
+                    type="tel"
+                    value={addUserForm.phone}
+                    onChange={e => setAddUserForm(f => ({ ...f, phone: e.target.value }))}
+                    placeholder="+254 7xx xxx xxx"
+                    className={`w-full rounded-lg px-4 py-2.5 text-sm border focus:outline-none focus:ring-1 focus:ring-green-500 ${darkMode ? 'bg-[#0F172A] border-white/10 text-white placeholder-white/30' : 'bg-gray-50 border-gray-300 text-gray-800 placeholder-gray-400'}`}
+                  />
+                </div>
+                <div>
+                  <label className={`block text-sm mb-1 ${darkMode ? 'text-white/60' : 'text-gray-500'}`}>Role *</label>
+                  <select
+                    required
+                    value={addUserForm.role}
+                    onChange={e => setAddUserForm(f => ({ ...f, role: e.target.value }))}
+                    className={`w-full rounded-lg px-4 py-2.5 text-sm border focus:outline-none focus:ring-1 focus:ring-green-500 ${darkMode ? 'bg-[#0F172A] border-white/10 text-white' : 'bg-gray-50 border-gray-300 text-gray-800'}`}
+                  >
+                    <option value="admin">Admin — full system access</option>
+                    <option value="manager">Manager — all operational modules</option>
+                    <option value="accountant">Accountant — finance & payroll</option>
+                    <option value="vet">Vet — animals & health records</option>
+                    <option value="sheep">Sheep — sheep farm profile</option>
+                    <option value="fish">Fish — fish farm profile</option>
+                  </select>
+                </div>
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddUserModal(false)}
+                    className={`flex-1 py-2.5 rounded-lg text-sm border ${darkMode ? 'border-white/10 text-white/60 hover:text-white' : 'border-gray-300 text-gray-600 hover:text-gray-800'}`}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={addUserSaving}
+                    className="flex-1 py-2.5 rounded-lg text-sm bg-green-500 text-white hover:bg-green-600 disabled:opacity-50"
+                  >
+                    {addUserSaving ? 'Creating…' : 'Create & Send Email'}
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div className="pt-2">
+                <div className="text-center mb-4">
+                  <div className="text-4xl mb-2">✅</div>
+                  <p className={`text-sm ${darkMode ? 'text-white/70' : 'text-gray-600'}`}>{addUserSuccess}</p>
+                </div>
+
+                {createdPassword && (
+                  <div className={`rounded-xl border p-5 mb-5 ${darkMode ? 'bg-[#0F172A] border-green-500/30' : 'bg-green-50 border-green-200'}`}>
+                    <p className={`text-xs font-semibold uppercase tracking-widest mb-3 ${darkMode ? 'text-green-400' : 'text-green-700'}`}>
+                      Generated Password
+                    </p>
+                    <p className={`text-2xl font-bold tracking-[0.2em] font-mono text-center py-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                      {createdPassword}
+                    </p>
+                    <p className={`text-xs text-center mt-2 ${darkMode ? 'text-white/40' : 'text-gray-400'}`}>
+                      This was also emailed to the user. They must change it on first login.
+                    </p>
+                  </div>
+                )}
+
+                <button
+                  onClick={() => { setShowAddUserModal(false); setAddUserSuccess(''); setCreatedPassword(''); }}
+                  className="w-full py-2.5 rounded-lg text-sm bg-green-500 text-white hover:bg-green-600"
+                >
+                  Done
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
