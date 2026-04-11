@@ -24,6 +24,14 @@ use App\Http\Controllers\Api\LeaveRequestController;
 use App\Http\Controllers\Api\PayrollController;
 use App\Http\Controllers\Api\TransactionController;
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\FishStockingController;
+use App\Http\Controllers\Api\FishMortalityController;
+use App\Http\Controllers\Api\FishGrowthController;
+use App\Http\Controllers\Api\FishHarvestController;
+use App\Http\Controllers\Api\WaterQualityController;
+use App\Http\Controllers\Api\WaterExchangeController;
+use App\Http\Controllers\Api\FishFeedController;
+use App\Http\Controllers\Api\FishSalesController;
 
 // Public routes
 Route::prefix('auth')->group(function () {
@@ -100,4 +108,49 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('transactions', [TransactionController::class, 'store']);
     Route::get('transactions/summary', [TransactionController::class, 'summary']);
     Route::get('transactions/{transaction}', [TransactionController::class, 'show']);
+
+    // Fish Farm — Production & Stocking
+    Route::get('fish/stocking',         [FishStockingController::class, 'index']);
+    Route::post('fish/stocking',        [FishStockingController::class, 'store']);
+    Route::get('fish/stocking/{fishStockingRecord}',  [FishStockingController::class, 'show']);
+    Route::delete('fish/stocking/{fishStockingRecord}', [FishStockingController::class, 'destroy']);
+
+    Route::get('fish/mortality',        [FishMortalityController::class, 'index']);
+    Route::post('fish/mortality',       [FishMortalityController::class, 'store']);
+    Route::get('fish/mortality/{fishMortalityRecord}',  [FishMortalityController::class, 'show']);
+    Route::delete('fish/mortality/{fishMortalityRecord}', [FishMortalityController::class, 'destroy']);
+
+    Route::get('fish/growth',           [FishGrowthController::class, 'index']);
+    Route::post('fish/growth',          [FishGrowthController::class, 'store']);
+    Route::get('fish/growth/{fishGrowthSample}',  [FishGrowthController::class, 'show']);
+    Route::delete('fish/growth/{fishGrowthSample}', [FishGrowthController::class, 'destroy']);
+
+    Route::get('fish/harvest',          [FishHarvestController::class, 'index']);
+    Route::post('fish/harvest',         [FishHarvestController::class, 'store']);
+    Route::get('fish/harvest/{fishHarvestRecord}', [FishHarvestController::class, 'show']);
+    Route::delete('fish/harvest/{fishHarvestRecord}', [FishHarvestController::class, 'destroy']);
+
+    // Fish Farm — Water Quality
+    Route::get('fish/water-quality',        [WaterQualityController::class, 'index']);
+    Route::post('fish/water-quality',       [WaterQualityController::class, 'store']);
+    Route::get('fish/water-quality/latest', [WaterQualityController::class, 'latest']);
+    Route::get('fish/water-quality/{waterQualityReading}', [WaterQualityController::class, 'show']);
+    Route::delete('fish/water-quality/{waterQualityReading}', [WaterQualityController::class, 'destroy']);
+
+    Route::get('fish/water-exchange',   [WaterExchangeController::class, 'index']);
+    Route::post('fish/water-exchange',  [WaterExchangeController::class, 'store']);
+    Route::delete('fish/water-exchange/{waterExchangeRecord}', [WaterExchangeController::class, 'destroy']);
+
+    // Fish Farm — Feeding
+    Route::get('fish/feed',             [FishFeedController::class, 'index']);
+    Route::post('fish/feed',            [FishFeedController::class, 'store']);
+    Route::get('fish/feed/{fishFeedRecord}', [FishFeedController::class, 'show']);
+    Route::delete('fish/feed/{fishFeedRecord}', [FishFeedController::class, 'destroy']);
+
+    // Fish Farm — Sales & Finance
+    Route::get('fish/sales',            [FishSalesController::class, 'index']);
+    Route::post('fish/sales',           [FishSalesController::class, 'store']);
+    Route::get('fish/sales/summary',    [FishSalesController::class, 'summary']);
+    Route::get('fish/sales/{fishSalesRecord}', [FishSalesController::class, 'show']);
+    Route::delete('fish/sales/{fishSalesRecord}', [FishSalesController::class, 'destroy']);
 });
